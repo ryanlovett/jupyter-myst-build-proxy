@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>No MyST Project Found</title>
+    <style>
+        body {{
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 100px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }}
+        .error-box {{
+            background: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }}
+        h1 {{ color: #d32f2f; }}
+        code {{
+            background: #f5f5f5;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: monospace;
+        }}
+        .path {{ 
+            color: #666; 
+            word-break: break-all;
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }}
+    </style>
+</head>
+<body>
+    <div class="error-box">
+        <h1>No MyST Project Found</h1>
+        <p>No <code>myst.yml</code> file was detected in the directory:</p>
+        <div class="path">{myst_dir}</div>
+        <p>To use MyST, you need to:</p>
+        <ol>
+            <li>Create a MyST project with <code>myst init</code></li>
+            <li>Or visit <code>/myst/&lt;project-path&gt;/</code> to specify a different project</li>
+        </ol>
+    </div>
+</body>
+</html>

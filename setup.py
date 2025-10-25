@@ -1,5 +1,4 @@
 import setuptools
-from jupyter_myst_proxy import MYST_CONTENT_PATH
 
 setuptools.setup(
     name="jupyter-myst-proxy",
@@ -14,10 +13,9 @@ setuptools.setup(
     entry_points={
         "jupyter_serverproxy_servers": [
             "myst = jupyter_myst_proxy:setup_myst",
-            f"{MYST_CONTENT_PATH} = jupyter_myst_proxy:setup_myst_content",
         ]
     },
-    # package_data={
-    #    'jupyter_myst_proxy': ['icons/myst.svg'],
-    # },
+    package_data={
+        'jupyter_myst_proxy': ['static_server.py', 'no_myst_error.html'],
+    },
 )
