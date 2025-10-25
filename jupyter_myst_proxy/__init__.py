@@ -56,6 +56,7 @@ def setup_myst():
         "timeout": 60,
         "absolute_url": False,
         "rewrite_response": rewrite_myst_response,
+        "path_info": "myst/",
         "launcher_entry": {
             "title": "MyST Build",
         },
