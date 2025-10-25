@@ -16,6 +16,6 @@ setuptools.setup(
         ]
     },
     package_data={
-        'jupyter_myst_proxy': ['static_server.py', 'no_myst_error.html'],
+        'jupyter_myst_proxy': ['static_server.py', 'no_myst_error.html', 'logo-square.svg'],
     },
 )

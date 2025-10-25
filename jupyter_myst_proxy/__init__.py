@@ -59,5 +59,6 @@ def setup_myst():
         "path_info": "myst/",
         "launcher_entry": {
             "title": "MyST Build",
+            "icon_path": _os.path.join(_os.path.dirname(__file__), "logo-square.svg"),
         },
     }
