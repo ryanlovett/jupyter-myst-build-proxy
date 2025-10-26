@@ -31,6 +31,7 @@ class MystHTTPRequestHandler(SimpleHTTPRequestHandler):
         Examples:
         - /test-myst-site/ -> myst_dir=test-myst-site, file_path=/
         - /test-myst-site/foo/ -> myst_dir=test-myst-site, file_path=/foo/
+        - /proj/project1/website/ -> myst_dir=proj/project1/website, file_path=/
         - / -> myst_dir=., file_path=/
         """
         clean_path = unquote(self.path.split("?")[0])
@@ -40,17 +41,27 @@ class MystHTTPRequestHandler(SimpleHTTPRequestHandler):
             # Root path: /
             return self.default_directory, "/"
 
-        # First part is the myst project directory
-        myst_dir = parts[0]
+        # Try to find myst.yml by traversing path segments from longest to shortest
+        # This allows for deeper paths like /proj/project1/website
+        for i in range(len(parts), 0, -1):
+            potential_myst_dir = os.path.join(*parts[:i])
+            if not os.path.isabs(potential_myst_dir):
+                potential_myst_dir = os.path.abspath(potential_myst_dir)
+
+            # Check if this path contains a myst.yml
+            if os.path.exists(os.path.join(potential_myst_dir, "myst.yml")):
+                myst_dir = potential_myst_dir
+                file_path = "/" + "/".join(parts[i:])
+                if self.path.split("?")[0].endswith("/") and file_path != "/":
+                    file_path += "/"
+                return myst_dir, file_path
+
+        # No myst.yml found in any parent path, use the full path as myst_dir
+        myst_dir = os.path.join(*parts)
         if not os.path.isabs(myst_dir):
             myst_dir = os.path.abspath(myst_dir)
 
-        # Remaining parts are the file path
-        file_path = "/" + "/".join(parts[1:])
-        if self.path.split("?")[0].endswith("/") and file_path != "/":
-            file_path += "/"
-
-        return myst_dir, file_path
+        return myst_dir, "/"
 
     def _render_template(self, template_name, **kwargs):
         """Render an HTML template"""
