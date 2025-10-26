@@ -1,6 +1,6 @@
 [project]
 name = "jupyter-myst-build-proxy"
-version = "0.0.1.dev"
+version = "0.1.0"
 description = "Jupyter extension to proxy MyST build server"
 authors = [{name = "Ryan Lovett"}]
 requires-python = ">=3.8"
@@ -8,10 +8,18 @@ dependencies = [
     "jupyter-server-proxy>4.1.0",
 ]
 keywords = ["Jupyter"]
-classifiers = ["Framework :: Jupyter"]
+classifiers = [
+    "Framework :: Jupyter",
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: BSD License",
+]
+readme = "README.md"
+license = {text = "BSD-3-Clause"}
 
 [project.urls]
 Homepage = "https://github.com/ryanlovett/jupyter-myst-build-proxy"
+Repository = "https://github.com/ryanlovett/jupyter-myst-build-proxy"
+Issues = "https://github.com/ryanlovett/jupyter-myst-build-proxy/issues"
 
 [project.entry-points."jupyter_serverproxy_servers"]
 myst = "jupyter_myst_build_proxy:setup_myst"
@@ -35,7 +43,7 @@ jupyter_myst_build_proxy = ["static_server.py", "no_myst_error.html", "logo-squa
 github_url = "https://github.com/ryanlovett/jupyter-myst-build-proxy"
 
 [tool.tbump.version]
-current = "0.0.1.dev"
+current = "0.1.0"
 regex = '''
     (?P<major>\d+)
     \.
