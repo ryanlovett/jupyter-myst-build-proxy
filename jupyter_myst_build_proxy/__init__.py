@@ -35,21 +35,22 @@ def rewrite_myst_response(response, request):
 
 
 def setup_myst():
-    import os as _os
+    import os
+    import sys
     import logging
 
     log = logging.getLogger(__name__)
 
     def _get_cmd(port, base_url="/"):
         # Default to cwd, but can be overridden with JUPYTER_MYST_BUILD_PROXY_DIR env var
-        default_dir = _os.environ.get("JUPYTER_MYST_BUILD_PROXY_DIR", _os.getcwd())
-        if not _os.path.isabs(default_dir):
-            default_dir = _os.path.abspath(default_dir)
+        default_dir = os.environ.get("JUPYTER_MYST_BUILD_PROXY_DIR", os.getcwd())
+        if not os.path.isabs(default_dir):
+            default_dir = os.path.abspath(default_dir)
 
         log.info(f"Starting static server on port {port} in directory: {default_dir}")
 
-        static_server = _os.path.join(_os.path.dirname(__file__), "static_server.py")
-        return [static_server, str(port), default_dir]
+        static_server = os.path.join(os.path.dirname(__file__), "static_server.py")
+        return [sys.executable, static_server, str(port), default_dir]
 
     return {
         "command": _get_cmd,
@@ -59,6 +60,6 @@ def setup_myst():
         "path_info": "myst/",
         "launcher_entry": {
             "title": "MyST Build",
-            "icon_path": _os.path.join(_os.path.dirname(__file__), "logo-square.svg"),
+            "icon_path": os.path.join(os.path.dirname(__file__), "logo-square.svg"),
         },
     }
