@@ -16,6 +16,7 @@ build_lock = threading.Lock()
 
 class MystHTTPRequestHandler(SimpleHTTPRequestHandler):
     default_directory = "."
+    jupyter_base_url = "/"  # Will be set to /user/{username}/ on JupyterHub
 
     def __init__(self, *args, **kwargs):
         super().__init__(
@@ -119,11 +120,15 @@ class MystHTTPRequestHandler(SimpleHTTPRequestHandler):
         log.debug(f"Request: {self.path}")
         log.debug(f"Parsed: myst_dir={myst_dir}, file_path={file_path}")
 
+        # Construct base_url with jupyter_base_url prefix (for JupyterHub support)
+        # Remove trailing slash from jupyter_base_url if present
+        jupyter_prefix = self.jupyter_base_url.rstrip("/")
+
         if os.path.abspath(myst_dir) == os.path.abspath(self.default_directory):
-            base_url = "/myst"
+            base_url = f"{jupyter_prefix}/myst"
         else:
             rel_path = os.path.relpath(myst_dir, self.default_directory)
-            base_url = f"/myst/{rel_path}"
+            base_url = f"{jupyter_prefix}/myst/{rel_path}"
 
         log.debug(f"base_url={base_url}")
 
@@ -223,9 +228,13 @@ class MystHTTPRequestHandler(SimpleHTTPRequestHandler):
 if __name__ == "__main__":
     port = int(sys.argv[1]) if len(sys.argv) > 1 else 8000
     default_dir = sys.argv[2] if len(sys.argv) > 2 else os.getcwd()
+    jupyter_base_url = sys.argv[3] if len(sys.argv) > 3 else "/"
 
     MystHTTPRequestHandler.default_directory = default_dir
+    MystHTTPRequestHandler.jupyter_base_url = jupyter_base_url
 
     with HTTPServer(("", port), MystHTTPRequestHandler) as httpd:
-        log.info(f"Starting on port {port}, default directory: {default_dir}")
+        log.info(
+            f"Starting on port {port}, default directory: {default_dir}, jupyter_base_url: {jupyter_base_url}"
+        )
         httpd.serve_forever()
