@@ -1,10 +1,38 @@
+[project]
+name = "jupyter-myst-build-proxy"
+version = "0.0.1.dev"
+description = "Jupyter extension to proxy MyST build server"
+authors = [{name = "Ryan Lovett"}]
+requires-python = ">=3.8"
+dependencies = [
+    "jupyter-server-proxy>4.1.0",
+]
+keywords = ["Jupyter"]
+classifiers = ["Framework :: Jupyter"]
+
+[project.urls]
+Homepage = "https://github.com/ryanlovett/jupyter-myst-build-proxy"
+
+[project.entry-points."jupyter_serverproxy_servers"]
+myst = "jupyter_myst_build_proxy:setup_myst"
+
+[build-system]
+requires = ["setuptools>=45", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["jupyter_myst_build_proxy*"]
+
+[tool.setuptools.package-data]
+jupyter_myst_build_proxy = ["static_server.py", "no_myst_error.html", "logo-square.svg"]
+
 # tbump is used to simplify and standardize the release process when updating
 # the version, making a git commit and tag, and pushing changes.
 #
 # ref: https://github.com/your-tools/tbump#readme
 #
 [tool.tbump]
-github_url = "https://github.com/ryanlovett/jupyter-myst-proxy"
+github_url = "https://github.com/ryanlovett/jupyter-myst-build-proxy"
 
 [tool.tbump.version]
 current = "0.0.1.dev"
@@ -24,4 +52,5 @@ message_template = "Bump to v{new_version}"
 tag_template = "v{new_version}"
 
 [[tool.tbump.file]]
-src = "setup.py"
+src = "pyproject.toml"
+search = 'version = "{current_version}"'

@@ -41,8 +41,8 @@ def setup_myst():
     log = logging.getLogger(__name__)
 
     def _get_cmd(port, base_url="/"):
-        # Default to cwd, but can be overridden with JUPYTER_MYST_PROXY_DIR env var
-        default_dir = _os.environ.get("JUPYTER_MYST_PROXY_DIR", _os.getcwd())
+        # Default to cwd, but can be overridden with JUPYTER_MYST_BUILD_PROXY_DIR env var
+        default_dir = _os.environ.get("JUPYTER_MYST_BUILD_PROXY_DIR", _os.getcwd())
         if not _os.path.isabs(default_dir):
             default_dir = _os.path.abspath(default_dir)
 

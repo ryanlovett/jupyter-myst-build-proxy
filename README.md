@@ -1,10 +1,10 @@
-# jupyter-myst-proxy
+# jupyter-myst-build-proxy
 
 A Jupyter server extension that serves and proxies static MyST websites.
 
 ## Overview
 
-`jupyter-myst-proxy` helps JupyterHub users development MyST-based websites. It can build the static HTML assets and serve them from a minimal python web server, allowing users to view MyST sites directly in a JupyterHub environment.
+`jupyter-myst-build-proxy` helps JupyterHub users development MyST-based websites. It can build the static HTML assets and serve them from a minimal python web server, allowing users to view MyST sites directly in a JupyterHub environment.
 
 ## Features
 
@@ -38,7 +38,7 @@ https://jupyterhub.example.edu/user/username/myst/my-website/
 
 ### Configuration
 
-Set the default directory using the `JUPYTER_MYST_PROXY_DIR` environment variable to specify an alternative root for where the extension finds MyST projects. The default is the user's current working directory.
+Set the default directory using the `JUPYTER_MYST_BUILD_PROXY_DIR` environment variable to specify an alternative root for where the extension finds MyST projects. The default is the user's current working directory.
 
 ### Rebuilding Sites
 
@@ -67,8 +67,8 @@ This will delete the `_build/html` directory and regenerate the site.
 ## Project Structure
 
 ```
-jupyter-myst-proxy/
-├── jupyter_myst_proxy/
+jupyter-myst-build-proxy/
+├── jupyter_myst_build_proxy/
 │   ├── __init__.py           # Main extension setup
 │   ├── static_server.py      # HTTP server for serving MyST sites
 │   └── no_myst_error.html    # Error page template
