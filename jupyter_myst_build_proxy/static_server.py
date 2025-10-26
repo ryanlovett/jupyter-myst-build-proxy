@@ -2,12 +2,16 @@
 import os
 import sys
 import subprocess
-import tempfile
+import threading
 import logging
 from http.server import SimpleHTTPRequestHandler, HTTPServer
 from urllib.parse import unquote, urlparse, parse_qs
 
 log = logging.getLogger(__name__)
+
+# Track builds in progress: {myst_dir: {'status': 'building'|'success'|'failed', 'error': str}}
+build_status = {}
+build_lock = threading.Lock()
 
 
 class MystHTTPRequestHandler(SimpleHTTPRequestHandler):
@@ -48,33 +52,55 @@ class MystHTTPRequestHandler(SimpleHTTPRequestHandler):
 
         return myst_dir, file_path
 
-    def _render_no_myst_page(self, myst_dir):
-        """Return an HTML page indicating no myst.yml found"""
-        template_path = os.path.join(os.path.dirname(__file__), "no_myst_error.html")
+    def _render_template(self, template_name, **kwargs):
+        """Render an HTML template"""
+        template_path = os.path.join(os.path.dirname(__file__), template_name)
         with open(template_path, "r") as f:
             html = f.read()
-        return html.format(myst_dir=myst_dir).encode("utf-8")
+        return html.format(**kwargs).encode("utf-8")
 
-    def _build_myst_site(self, myst_dir, base_url):
-        """Build the MyST site if needed"""
+    def _start_build(self, myst_dir, base_url):
+        """Start building the MyST site in a background thread"""
+
+        def build():
+            html_dir = os.path.join(myst_dir, "_build", "html")
+
+            try:
+                log.info(
+                    f"Building static HTML for {myst_dir} with BASE_URL={base_url}"
+                )
+                env = os.environ.copy()
+                env["BASE_URL"] = base_url
+                result = subprocess.run(
+                    ["myst", "build", "--html", "--ci"],
+                    cwd=myst_dir,
+                    env=env,
+                    capture_output=True,
+                    text=True,
+                )
+
+                with build_lock:
+                    if result.returncode != 0:
+                        log.error(f"Build error: {result.stderr}")
+                        build_status[myst_dir] = {
+                            "status": "failed",
+                            "error": result.stderr,
+                        }
+                    else:
+                        log.info(f"Build completed for {myst_dir}")
+                        build_status[myst_dir] = {"status": "success"}
+            except Exception as e:
+                log.error(f"Build exception: {e}")
+                with build_lock:
+                    build_status[myst_dir] = {"status": "failed", "error": str(e)}
+
+        thread = threading.Thread(target=build, daemon=True)
+        thread.start()
+
+    def _needs_build(self, myst_dir):
+        """Check if the MyST site needs to be built"""
         html_dir = os.path.join(myst_dir, "_build", "html")
-
-        if not os.path.exists(os.path.join(html_dir, "index.html")):
-            log.info(f"Building static HTML for {myst_dir} with BASE_URL={base_url}")
-            env = os.environ.copy()
-            env["BASE_URL"] = base_url
-            result = subprocess.run(
-                ["myst", "build", "--html", "--ci"],
-                cwd=myst_dir,
-                env=env,
-                capture_output=True,
-                text=True,
-            )
-            if result.returncode != 0:
-                log.error(f"Build error: {result.stderr}")
-                return None
-
-        return html_dir
+        return not os.path.exists(os.path.join(html_dir, "index.html"))
 
     def do_GET(self):
         myst_dir, file_path = self._parse_path()
@@ -82,18 +108,11 @@ class MystHTTPRequestHandler(SimpleHTTPRequestHandler):
         log.debug(f"Request: {self.path}")
         log.debug(f"Parsed: myst_dir={myst_dir}, file_path={file_path}")
 
-        # Determine BASE_URL for this project
-        # If myst_dir is same as default_directory, BASE_URL is /myst
-        # Otherwise, BASE_URL is /myst/<project_path>
-        # Note: No trailing slash - MyST adds it automatically
         if os.path.abspath(myst_dir) == os.path.abspath(self.default_directory):
             base_url = "/myst"
-            url_prefix = ""
         else:
-            # Extract the project name from the path
             rel_path = os.path.relpath(myst_dir, self.default_directory)
             base_url = f"/myst/{rel_path}"
-            url_prefix = f"/{rel_path}"
 
         log.debug(f"base_url={base_url}")
 
@@ -108,7 +127,10 @@ class MystHTTPRequestHandler(SimpleHTTPRequestHandler):
                 if os.path.exists(html_dir):
                     shutil.rmtree(html_dir)
 
-                # Redirect without ?rebuild=1, preserving the full path with /myst/ prefix
+                with build_lock:
+                    if myst_dir in build_status:
+                        del build_status[myst_dir]
+
                 self.send_response(302)
                 redirect_url = base_url + file_path
                 self.send_header("Location", redirect_url)
@@ -119,33 +141,59 @@ class MystHTTPRequestHandler(SimpleHTTPRequestHandler):
         if not os.path.exists(os.path.join(myst_dir, "myst.yml")):
             self.send_response(404)
             self.send_header("Content-Type", "text/html; charset=utf-8")
-            body = self._render_no_myst_page(myst_dir)
+            body = self._render_template("no_myst_error.html", myst_dir=myst_dir)
             self.send_header("Content-Length", str(len(body)))
             self.end_headers()
             self.wfile.write(body)
             return
 
-        # Build the site if needed
-        html_dir = self._build_myst_site(myst_dir, base_url)
-        if not html_dir:
+        # Check build status
+        with build_lock:
+            status = build_status.get(myst_dir, {}).get("status")
+
+        if status == "building":
+            self.send_response(200)
+            self.send_header("Content-Type", "text/html; charset=utf-8")
+            body = self._render_template("building.html", myst_dir=myst_dir)
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+            return
+
+        if status == "failed":
+            with build_lock:
+                error = build_status.get(myst_dir, {}).get("error", "Unknown error")
             self.send_response(500)
             self.send_header("Content-Type", "text/plain")
-            body = b"Build failed"
+            body = f"Build failed:\n{error}".encode("utf-8")
             self.send_header("Content-Length", str(len(body)))
             self.end_headers()
             self.wfile.write(body)
             return
 
-        # Serve from html_dir
+        # Check if build is needed
+        if self._needs_build(myst_dir):
+            with build_lock:
+                build_status[myst_dir] = {"status": "building"}
+            self._start_build(myst_dir, base_url)
+
+            self.send_response(200)
+            self.send_header("Content-Type", "text/html; charset=utf-8")
+            body = self._render_template("building.html", myst_dir=myst_dir)
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+            return
+
+        # Site is built, serve it
+        html_dir = os.path.join(myst_dir, "_build", "html")
         self.directory = html_dir
 
-        # Map file_path to actual file in html_dir
         full_path = os.path.join(self.directory, file_path.lstrip("/"))
 
         # Handle directory redirects
         if os.path.isdir(full_path) and not file_path.endswith("/"):
             self.send_response(301)
-            # Use relative redirect
             path_parts = file_path.rstrip("/").split("/")
             relative_redirect = path_parts[-1] + "/" if path_parts[-1] else "./"
             if "?" in self.path:
@@ -154,7 +202,6 @@ class MystHTTPRequestHandler(SimpleHTTPRequestHandler):
             self.end_headers()
             return
 
-        # Update self.path to be relative to html_dir
         self.path = file_path
         if "?" in self.path:
             self.path = file_path + "?" + self.path.split("?", 1)[1]

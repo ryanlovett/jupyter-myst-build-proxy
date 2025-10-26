@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="refresh" content="3">
+    <title>Building MyST Site...</title>
+    <style>
+        body {{
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #fff;
+            color: #111;
+        }}
+        .container {{
+            text-align: center;
+            background: #fff;
+            padding: 3rem;
+            border: 1px solid #e1e4e8;
+            border-radius: 3px;
+            max-width: 600px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+        }}
+        h1 {{
+            color: #212121;
+            margin: 0 0 1.5rem 0;
+            font-size: 1.75rem;
+            font-weight: 500;
+        }}
+        .spinner {{
+            width: 50px;
+            height: 50px;
+            margin: 2rem auto;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #F37726;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }}
+        @keyframes spin {{
+            0% {{ transform: rotate(0deg); }}
+            100% {{ transform: rotate(360deg); }}
+        }}
+        p {{
+            color: #555;
+            line-height: 1.6;
+            margin: 1rem 0;
+            font-size: 14px;
+        }}
+        code {{
+            background: #f7f7f7;
+            padding: 0.2rem 0.5rem;
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+            font-size: 13px;
+            color: #24292e;
+            border: 1px solid #e1e4e8;
+        }}
+        .status {{
+            color: #767676;
+            font-size: 13px;
+            margin-top: 1.5rem;
+        }}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Building MyST Site</h1>
+        <div class="spinner"></div>
+        <p>Your MyST site is being built...</p>
+        <p><code>{myst_dir}</code></p>
+        <p class="status">This page will automatically refresh when ready.</p>
+    </div>
+</body>
+</html>
