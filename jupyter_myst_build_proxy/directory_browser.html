@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Select MyST Projects</title>
+    <style>
+        body {{
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #fafafa;
+            color: #111;
+        }}
+        .container {{
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            background-color: #fff;
+            min-height: 100vh;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+        }}
+        .header {{
+            font-size: 14px;
+            color: #333;
+            margin-bottom: 20px;
+            font-weight: 400;
+        }}
+        .breadcrumb {{
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+            color: #333;
+            margin-bottom: 20px;
+            padding: 10px 0;
+        }}
+        .breadcrumb-icon {{
+            margin-right: 8px;
+            font-size: 16px;
+        }}
+        .breadcrumb-path {{
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+        }}
+        .list-header {{
+            display: flex;
+            align-items: center;
+            padding: 8px 12px;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 12px;
+            font-weight: 600;
+            color: #616161;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }}
+        .directory-list {{
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            border: 1px solid #e0e0e0;
+            border-top: none;
+        }}
+        .directory-item {{
+            border-bottom: 1px solid #e0e0e0;
+        }}
+        .directory-item:last-child {{
+            border-bottom: none;
+        }}
+        .directory-link {{
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            text-decoration: none;
+            color: #212121;
+            transition: background-color 0.1s ease;
+        }}
+        .directory-link:hover {{
+            background-color: #f5f5f5;
+        }}
+        .folder-icon {{
+            margin-right: 12px;
+            font-size: 16px;
+            flex-shrink: 0;
+            color: #757575;
+        }}
+        .directory-name {{
+            font-size: 13px;
+            font-weight: 400;
+            flex: 1;
+        }}
+        .myst-badge {{
+            margin-left: auto;
+            background: #e8f5e9;
+            color: #2e7d32;
+            font-size: 10px;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }}
+        .empty-state {{
+            text-align: center;
+            padding: 60px 20px;
+            color: #757575;
+        }}
+        .empty-state-icon {{
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.3;
+        }}
+        .empty-state-text {{
+            font-size: 14px;
+        }}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">Select items to open with MyST.</div>
+        
+        <div class="breadcrumb">
+            <span class="breadcrumb-icon">📁</span>
+            <span class="breadcrumb-path">{current_path}</span>
+        </div>
+        
+        <div class="list-header">Name</div>
+        <ul class="directory-list">
+            {parent_directory}
+            {directories}
+        </ul>
+        
+        {empty_state}
+    </div>
+</body>
+</html>

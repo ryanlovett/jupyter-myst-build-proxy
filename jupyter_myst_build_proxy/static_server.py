@@ -97,6 +97,87 @@ class MystHTTPRequestHandler(SimpleHTTPRequestHandler):
 
         return template_html.format(**kwargs).encode("utf-8")
 
+    def _render_directory_browser(self, myst_dir, base_url):
+        """Render directory browser showing available directories"""
+        import html
+
+        # Get current path relative to default directory
+        if os.path.abspath(myst_dir) == os.path.abspath(self.default_directory):
+            current_path = "~"
+            rel_path = ""
+        else:
+            rel_path = os.path.relpath(myst_dir, self.default_directory)
+            current_path = f"~/{rel_path}"
+
+        # List directories in the current directory
+        directories = []
+        try:
+            if os.path.isdir(myst_dir):
+                entries = os.listdir(myst_dir)
+                for entry in sorted(entries):
+                    entry_path = os.path.join(myst_dir, entry)
+                    if os.path.isdir(entry_path) and not entry.startswith("."):
+                        # Check if this directory contains myst.yml
+                        has_myst = os.path.exists(os.path.join(entry_path, "myst.yml"))
+
+                        # Build the URL for this directory
+                        if rel_path:
+                            dir_url = f"{base_url}/{entry}/"
+                        else:
+                            dir_url = f"{base_url.rstrip('/')}/{entry}/"
+
+                        # Create directory entry
+                        myst_badge = (
+                            '<span class="myst-badge">MyST</span>' if has_myst else ""
+                        )
+                        directories.append(
+                            f'<li class="directory-item">'
+                            f'<a href="{html.escape(dir_url)}" class="directory-link">'
+                            f'<span class="folder-icon">📁</span>'
+                            f'<span class="directory-name">{html.escape(entry)}</span>'
+                            f"{myst_badge}"
+                            f"</a>"
+                            f"</li>"
+                        )
+        except PermissionError:
+            pass
+
+        # Add parent directory link if not at root
+        parent_directory = ""
+        if rel_path:
+            parent_url = base_url.rsplit("/", 1)[0]
+            if not parent_url or parent_url.endswith("/myst-build"):
+                parent_url = parent_url.rstrip("/") if parent_url else ""
+            parent_directory = (
+                '<li class="directory-item">'
+                f'<a href="{html.escape(parent_url + "/") if parent_url else "/"}" class="directory-link">'
+                '<span class="folder-icon">📁</span>'
+                '<span class="directory-name">..</span>'
+                "</a>"
+                "</li>"
+            )
+
+        # Build the HTML
+        if directories:
+            directories_html = "\n".join(directories)
+            empty_state = ""
+        else:
+            directories_html = ""
+            empty_state = (
+                '<div class="empty-state">'
+                '<div class="empty-state-icon">📁</div>'
+                '<div class="empty-state-text">No directories found</div>'
+                "</div>"
+            )
+
+        return self._render_template(
+            "directory_browser.html",
+            current_path=html.escape(current_path),
+            parent_directory=parent_directory,
+            directories=directories_html,
+            empty_state=empty_state,
+        )
+
     def _start_build(self, myst_dir, base_url):
         """Start building the MyST site in a background thread"""
 
@@ -199,9 +280,10 @@ class MystHTTPRequestHandler(SimpleHTTPRequestHandler):
 
         # Check if myst.yml exists
         if not os.path.exists(os.path.join(myst_dir, "myst.yml")):
-            self.send_response(404)
+            # Show directory browser instead of error page
+            self.send_response(200)
             self.send_header("Content-Type", "text/html; charset=utf-8")
-            body = self._render_template("no_myst_error.html", myst_dir=myst_dir)
+            body = self._render_directory_browser(myst_dir, base_url)
             self.send_header("Content-Length", str(len(body)))
             self.end_headers()
             self.wfile.write(body)
