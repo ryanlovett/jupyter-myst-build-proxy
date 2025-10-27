@@ -17,7 +17,7 @@ A Jupyter server extension that serves and proxies static MyST websites.
 ## Installation
 
 ```bash
-pip install .
+pip install jupyter-myst-build-proxy
 ```
 
 ## Usage
