@@ -72,7 +72,8 @@ jupyter-myst-build-proxy/
 │   ├── __init__.py           # Main extension setup
 │   ├── static_server.py      # HTTP server for serving MyST sites
 │   ├── building.html         # Building status template
-│   └── no_myst_error.html    # Error page template
+│   ├── directory_browser.html # Directory browser template
+│   └── logo-square.svg       # MyST logo
 ├── tests/                    # pytest tests
 ├── setup.py                  # Package configuration
 └── README.md                 # This file
