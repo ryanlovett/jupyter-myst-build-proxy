@@ -71,13 +71,54 @@
             font-size: 12px;
             color: #24292e;
             border: 1px solid #e1e4e8;
-            margin: 1.5rem 0;
+            margin: 1.5rem auto;
             text-align: left;
             overflow-x: auto;
             max-height: 100px;
             overflow-y: auto;
+            width: 100%;
+            max-width: 540px;
+            box-sizing: border-box;
+            min-height: 2.5rem;
+        }}
+        .build-output:empty {{
+            display: none;
         }}
     </style>
+    <script>
+        // Make spinner continuous across page reloads by syncing to real time
+        // instead of page load time
+        function syncSpinner() {{
+            const spinner = document.querySelector('.spinner');
+            if (!spinner) return;
+            
+            // Calculate rotation based on current time
+            // 1 full rotation per second (360 degrees)
+            const now = Date.now();
+            const rotationDegrees = (now / 1000 * 360) % 360;
+            
+            // Set initial rotation
+            spinner.style.transform = `rotate(${{rotationDegrees}}deg)`;
+            
+            // Remove the CSS animation and handle it with JS for smooth continuation
+            spinner.style.animation = 'none';
+            
+            // Animate smoothly from here
+            requestAnimationFrame(function animate() {{
+                const currentTime = Date.now();
+                const rotation = (currentTime / 1000 * 360) % 360;
+                spinner.style.transform = `rotate(${{rotation}}deg)`;
+                requestAnimationFrame(animate);
+            }});
+        }}
+        
+        // Run as soon as possible
+        if (document.readyState === 'loading') {{
+            document.addEventListener('DOMContentLoaded', syncSpinner);
+        }} else {{
+            syncSpinner();
+        }}
+    </script>
 </head>
 <body>
     <div class="container">
