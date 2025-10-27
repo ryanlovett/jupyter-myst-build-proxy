@@ -11,7 +11,7 @@ import sys
 c.JupyterHub.authenticator_class = 'dummy'
 
 # Allow any user to login (for testing)
-c.Authenticator.allowed_users = {'testuser', 'myst', 'alice', 'bob'}
+c.Authenticator.allowed_users = {'testuser', 'myst-build', 'alice', 'bob'}
 c.Authenticator.admin_users = {'testuser'}
 
 # Use SimpleLocalProcessSpawner - spawns servers as local processes
