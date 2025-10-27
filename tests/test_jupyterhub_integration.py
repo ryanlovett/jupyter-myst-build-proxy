@@ -5,7 +5,7 @@ These tests spin up a local JupyterHub instance and verify that:
 1. MyST sites build correctly
 2. Assets load from the correct paths (with /user/{username}/ prefix)
 3. Navigation links are rewritten correctly
-4. Edge cases like username "myst" work correctly
+4. Edge cases like username "myst-build" work correctly
 """
 
 import os
@@ -21,7 +21,7 @@ from pathlib import Path
 JUPYTERHUB_URL = "http://127.0.0.1:8000"
 JUPYTERHUB_CONFIG = Path(__file__).parent / "jupyterhub_config.py"
 TEST_SITE_DIR = Path(__file__).parent / "test-site"
-TEST_USERS = ["testuser", "myst", "alice"]
+TEST_USERS = ["testuser", "myst-build", "alice"]
 
 
 class JupyterHubInstance:
@@ -220,7 +220,7 @@ def test_basic_myst_build(jupyterhub):
     test_site = setup_test_site(username)
     
     # Access the MyST proxy endpoint
-    myst_url = f"{JUPYTERHUB_URL}/user/{username}/myst/test-myst-site/"
+    myst_url = f"{JUPYTERHUB_URL}/user/{username}/myst-build/test-myst-site/"
     print(f"Accessing: {myst_url}")
     
     response = session.get(myst_url, timeout=60)
@@ -244,8 +244,8 @@ def test_basic_myst_build(jupyterhub):
     
     # Print asset path info for debugging
     html = response.text
-    if f"/user/{username}/myst/" in html:
-        print("✓ Asset paths are correctly prefixed with user/username/myst/")
+    if f"/user/{username}/myst-build/" in html:
+        print("✓ Asset paths are correctly prefixed with user/username/myst-build/")
     elif 'href="/build/' in html:
         print("⚠ Asset paths are NOT prefixed (using /build/ directly)")
     
@@ -255,8 +255,8 @@ def test_basic_myst_build(jupyterhub):
 
 
 def test_username_myst(jupyterhub):
-    """Test that username 'myst' works correctly (edge case)"""
-    username = "myst"
+    """Test that username 'myst-build' works correctly (edge case)"""
+    username = "myst-build"
     
     # Login and spawn server
     session = login_and_get_cookie(username)
@@ -266,8 +266,8 @@ def test_username_myst(jupyterhub):
     test_site = setup_test_site(username)
     
     # Access the MyST proxy endpoint
-    # URL should be /user/myst/myst/test-myst-site/
-    myst_url = f"{JUPYTERHUB_URL}/user/{username}/myst/test-myst-site/"
+    # URL should be /user/myst-build/myst-build/test-myst-site/
+    myst_url = f"{JUPYTERHUB_URL}/user/{username}/myst-build/test-myst-site/"
     print(f"Accessing: {myst_url}")
     
     response = session.get(myst_url, timeout=60)
@@ -286,7 +286,7 @@ def test_username_myst(jupyterhub):
     
     # Verify assets paths are correct (should not confuse the two "myst"s)
     html = response.text
-    assert f"/user/{username}/myst/" in html or f'href="build/' in html
+    assert f"/user/{username}/myst-build/" in html or f'href="build/' in html
     
     # Clean up
     if test_site.exists():
@@ -305,7 +305,7 @@ def test_asset_loading(jupyterhub):
     test_site = setup_test_site(username)
     
     # Access the MyST site
-    myst_url = f"{JUPYTERHUB_URL}/user/{username}/myst/test-myst-site/"
+    myst_url = f"{JUPYTERHUB_URL}/user/{username}/myst-build/test-myst-site/"
     
     # Wait for build
     max_wait = 60
@@ -376,7 +376,7 @@ def test_deep_subdirectory_paths(jupyterhub):
     print(f"myst.yml exists: {(deep_path / 'myst.yml').exists()}")
     
     # Access the MyST proxy endpoint with deep path
-    myst_url = f"{JUPYTERHUB_URL}/user/{username}/myst/courses/fall/stat159/"
+    myst_url = f"{JUPYTERHUB_URL}/user/{username}/myst-build/courses/fall/stat159/"
     print(f"Accessing: {myst_url}")
     
     response = session.get(myst_url, timeout=60)
@@ -395,7 +395,7 @@ def test_deep_subdirectory_paths(jupyterhub):
     
     # Verify assets paths include the deep path
     html = response.text
-    assert f"/user/{username}/myst/courses/fall/stat159/" in html or f'href="build/' in html
+    assert f"/user/{username}/myst-build/courses/fall/stat159/" in html or f'href="build/' in html
     
     # Clean up - remove the entire courses directory
     courses_dir = home_dir / "courses"
@@ -440,7 +440,7 @@ def test_multiple_deep_paths(jupyterhub):
     print(f"Created spring site at: {spring_path}")
     
     # Test fall site
-    fall_url = f"{JUPYTERHUB_URL}/user/{username}/myst/courses/fall/stat159/"
+    fall_url = f"{JUPYTERHUB_URL}/user/{username}/myst-build/courses/fall/stat159/"
     print(f"Accessing fall site: {fall_url}")
     
     max_wait = 60
@@ -463,7 +463,7 @@ def test_multiple_deep_paths(jupyterhub):
     assert "Test MyST Site" in fall_response.text
     
     # Test spring site
-    spring_url = f"{JUPYTERHUB_URL}/user/{username}/myst/courses/spring/stat159/"
+    spring_url = f"{JUPYTERHUB_URL}/user/{username}/myst-build/courses/spring/stat159/"
     print(f"Accessing spring site: {spring_url}")
     
     spring_response = None

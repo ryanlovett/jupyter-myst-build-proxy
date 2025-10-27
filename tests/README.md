@@ -8,7 +8,7 @@ The tests spin up a local JupyterHub instance and verify:
 
 1. **Basic MyST build**: MyST sites build correctly and serve content
 2. **Asset loading**: JS/CSS assets load from the correct paths (with `/user/{username}/` prefix)
-3. **Edge case - username "myst"**: Correctly handles the case where a username is "myst" (path becomes `/user/myst/myst/...`)
+3. **Edge case - username "myst"**: Correctly handles the case where a username is "myst-build" (path becomes `/user/myst-build/myst-build/...`)
 4. **Deep project paths**: Projects in subdirectories like `proj/courses/stat134/fall-2025/` work correctly
 
 ## Setup
@@ -67,14 +67,14 @@ pytest test_jupyterhub_integration.py::test_basic_myst_build -v -s
    - `DummyAuthenticator`: Allows login with any username/password (for testing)
    - `SimpleLocalProcessSpawner`: Spawns servers as local processes (no Docker needed)
    - Localhost binding on port 8000
-   - Allowed test users: `testuser`, `myst`, `alice`, `bob`
+   - Allowed test users: `testuser`, `myst-build`, `alice`, `bob`
 
 2. **Test Flow**:
    - Start JupyterHub in the background
    - Login as a test user
    - Spawn their single-user server
    - Copy the test MyST site to their home directory
-   - Access `/user/{username}/myst/test-myst-site/`
+   - Access `/user/{username}/myst-build/test-myst-site/`
    - Wait for the site to build
    - Verify the HTML content and asset paths
    - Clean up

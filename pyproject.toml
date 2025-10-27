@@ -22,7 +22,7 @@ Repository = "https://github.com/ryanlovett/jupyter-myst-build-proxy"
 Issues = "https://github.com/ryanlovett/jupyter-myst-build-proxy/issues"
 
 [project.entry-points."jupyter_serverproxy_servers"]
-myst = "jupyter_myst_build_proxy:setup_myst"
+myst-build = "jupyter_myst_build_proxy:setup_myst"
 
 [build-system]
 requires = ["setuptools>=45", "wheel"]

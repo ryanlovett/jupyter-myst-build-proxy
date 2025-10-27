@@ -169,10 +169,10 @@ class MystHTTPRequestHandler(SimpleHTTPRequestHandler):
         jupyter_prefix = self.jupyter_base_url.rstrip("/")
 
         if os.path.abspath(myst_dir) == os.path.abspath(self.default_directory):
-            base_url = f"{jupyter_prefix}/myst"
+            base_url = f"{jupyter_prefix}/myst-build"
         else:
             rel_path = os.path.relpath(myst_dir, self.default_directory)
-            base_url = f"{jupyter_prefix}/myst/{rel_path}"
+            base_url = f"{jupyter_prefix}/myst-build/{rel_path}"
 
         log.debug(f"base_url={base_url}")
 

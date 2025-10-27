@@ -8,7 +8,7 @@ A Jupyter server extension that serves and proxies static MyST websites.
 
 ## Features
 
-- **Path-based routing**: Access MyST projects at `/myst/<project-path>/`
+- **Path-based routing**: Access MyST projects at `/myst-build/<project-path>/`
 - **On-demand building**: Automatically builds MyST sites when first accessed
 - **Rebuild support**: Trigger rebuilds with `?rebuild=1` query parameter
 - **Multiple projects**: Serve different MyST projects from subdirectories
@@ -24,16 +24,16 @@ pip install jupyter-myst-build-proxy
 
 ### Basic Usage
 
-With a jupyter application running, visit `/myst/<project-path>/` where `<project-path>` is a directory containing a MyST project (with `myst.yml`).
+With a jupyter application running, visit `/myst-build/<project-path>/` where `<project-path>` is a directory containing a MyST project (with `myst.yml`).
 
 Example 1: Jupyter server on localhost
 ```
-http://localhost:8888/myst/my-documentation/
+http://localhost:8888/myst-build/my-documentation/
 ```
 
 Example 2: Jupyter server on a JupyterHub
 ```
-https://jupyterhub.example.edu/user/username/myst/my-website/
+https://jupyterhub.example.edu/user/username/myst-build/my-website/
 ```
 
 ### Configuration
@@ -45,19 +45,19 @@ Set the default directory using the `JUPYTER_MYST_BUILD_PROXY_DIR` environment v
 To force a rebuild of a MyST site, add `?rebuild=1` to any page URL:
 
 ```
-http://localhost:8888/myst/my-documentation/?rebuild=1
+http://localhost:8888/myst-build/my-documentation/?rebuild=1
 ```
 
 This will delete the `_build/html` directory and regenerate the site.
 
 ## How It Works
 
-1. When you access `/myst/<project-path>/`, the extension:
+1. When you access `/myst-build/<project-path>/`, the extension:
    - Checks if `<project-path>/myst.yml` exists
    - If the site hasn't been built, runs `myst build --html --ci` with the appropriate `BASE_URL`
    - Serves the static HTML from `<project-path>/_build/html/`
 
-2. The extension uses path-based routing to ensure all assets and navigation links work correctly with the `/myst/<project-path>/` prefix.
+2. The extension uses path-based routing to ensure all assets and navigation links work correctly with the `/myst-build/<project-path>/` prefix.
 
 ## Requirements
 

@@ -17,8 +17,8 @@ def rewrite_myst_response(response, request):
     body = response.body.decode("utf-8")
 
     # Use the stored proxy base URL to determine where our proxy is mounted
-    # Local: _PROXY_BASE_URL = "/myst/"
-    # JupyterHub: _PROXY_BASE_URL = "/user/{username}/myst/"
+    # Local: _PROXY_BASE_URL = "/myst-build/"
+    # JupyterHub: _PROXY_BASE_URL = "/user/{username}/myst-build/"
     if _PROXY_BASE_URL is None:
         # Fallback: can't rewrite without knowing the base
         return response
@@ -30,11 +30,11 @@ def rewrite_myst_response(response, request):
     if not path.startswith(proxy_base + "/") and path != proxy_base:
         return response
 
-    # Extract the Jupyter server base (everything before "/myst")
-    # proxy_base is like "/user/{username}/myst" or "/myst"
-    # We need to remove the final "/myst" part
-    if proxy_base.endswith("/myst"):
-        jupyter_base = proxy_base[:-5]
+    # Extract the Jupyter server base (everything before "/myst-build")
+    # proxy_base is like "/user/{username}/myst-build" or "/myst-build"
+    # We need to remove the final "/myst-build" part
+    if proxy_base.endswith("/myst-build"):
+        jupyter_base = proxy_base[:-11]
     else:
         jupyter_base = ""
 
@@ -53,13 +53,13 @@ def rewrite_myst_response(response, request):
 
     # Construct the base URL
     if parts:
-        base_url = f"{jupyter_base}/myst/" + "/".join(parts)
+        base_url = f"{jupyter_base}/myst-build/" + "/".join(parts)
     else:
-        base_url = f"{jupyter_base}/myst"
+        base_url = f"{jupyter_base}/myst-build"
 
     # Fix navigation URLs in footer/next/prev that are missing the project prefix
     # Pattern: "url":"/foo" -> "url":"<base_url>/foo"
-    body = re.sub(r'"url":"(/(?!myst/|user/)[^"]+)"', rf'"url":"{base_url}\1"', body)
+    body = re.sub(r'"url":"(/(?!myst-build/|user/)[^"]+)"', rf'"url":"{base_url}\1"', body)
 
     response.body = body.encode("utf-8")
     response.headers["Content-Length"] = str(len(response.body))
@@ -75,7 +75,7 @@ def setup_myst():
     log = logging.getLogger(__name__)
 
     # This is the path suffix that jupyter-server-proxy adds
-    PATH_INFO = "myst/"
+    PATH_INFO = "myst-build/"
 
     def _get_cmd(port, base_url="/"):
         global _PROXY_BASE_URL
@@ -89,12 +89,12 @@ def setup_myst():
             default_dir = os.path.abspath(default_dir)
 
         # base_url from jupyter-server-proxy includes the full path:
-        # - Local: "/myst/"
-        # - JupyterHub: "/user/{username}/myst/"
+        # - Local: "/myst-build/"
+        # - JupyterHub: "/user/{username}/myst-build/"
         # We need to strip our path_info to get the jupyter server base
         jupyter_base_url = base_url.rstrip("/")
         if jupyter_base_url.endswith("/" + PATH_INFO.rstrip("/")):
-            # Remove "/myst" from the end
+            # Remove "/myst-build" from the end
             jupyter_base_url = jupyter_base_url[: -(len(PATH_INFO.rstrip("/")) + 1)]
         if not jupyter_base_url:
             jupyter_base_url = "/"
