@@ -21,7 +21,9 @@
             padding: 3rem;
             border: 1px solid #e1e4e8;
             border-radius: 3px;
-            max-width: 600px;
+            width: 600px;
+            max-width: calc(100vw - 2rem);
+            box-sizing: border-box;
             box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
         }}
         h1 {{
@@ -63,7 +65,62 @@
             font-size: 13px;
             margin-top: 1.5rem;
         }}
+        .build-output {{
+            background: #f7f7f7;
+            padding: 0.75rem 1rem;
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+            font-size: 12px;
+            color: #24292e;
+            border: 1px solid #e1e4e8;
+            margin: 1.5rem auto;
+            text-align: left;
+            overflow-x: auto;
+            max-height: 100px;
+            overflow-y: auto;
+            width: 100%;
+            max-width: 540px;
+            box-sizing: border-box;
+            min-height: 2.5rem;
+        }}
+        .build-output:empty {{
+            display: none;
+        }}
     </style>
+    <script>
+        // Make spinner continuous across page reloads by syncing to real time
+        // instead of page load time
+        function syncSpinner() {{
+            const spinner = document.querySelector('.spinner');
+            if (!spinner) return;
+            
+            // Calculate rotation based on current time
+            // 1 full rotation per second (360 degrees)
+            const now = Date.now();
+            const rotationDegrees = (now / 1000 * 360) % 360;
+            
+            // Set initial rotation
+            spinner.style.transform = `rotate(${{rotationDegrees}}deg)`;
+            
+            // Remove the CSS animation and handle it with JS for smooth continuation
+            spinner.style.animation = 'none';
+            
+            // Animate smoothly from here
+            requestAnimationFrame(function animate() {{
+                const currentTime = Date.now();
+                const rotation = (currentTime / 1000 * 360) % 360;
+                spinner.style.transform = `rotate(${{rotation}}deg)`;
+                requestAnimationFrame(animate);
+            }});
+        }}
+        
+        // Run as soon as possible
+        if (document.readyState === 'loading') {{
+            document.addEventListener('DOMContentLoaded', syncSpinner);
+        }} else {{
+            syncSpinner();
+        }}
+    </script>
 </head>
 <body>
     <div class="container">
@@ -71,6 +128,7 @@
         <div class="spinner"></div>
         <p>Your MyST site is being built...</p>
         <p><code>{myst_dir}</code></p>
+        {last_output_html}
         <p class="status">This page will automatically refresh when ready.</p>
     </div>
 </body>
