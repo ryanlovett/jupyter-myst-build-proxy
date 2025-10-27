@@ -37,17 +37,23 @@ class MystHTTPRequestHandler(SimpleHTTPRequestHandler):
         """
         clean_path = unquote(self.path.split("?")[0])
         parts = [p for p in clean_path.split("/") if p]
+        log.debug(
+            f"_parse_path: self.path={self.path}, clean_path={clean_path}, parts={parts}, default_directory={self.default_directory}"
+        )
 
         if not parts:
             # Root path: /
+            log.debug(
+                f"_parse_path: Root path, returning default_directory={self.default_directory}"
+            )
             return self.default_directory, "/"
 
         # Try to find myst.yml by traversing path segments from longest to shortest
         # This allows for deeper paths like /proj/project1/website
         for i in range(len(parts), 0, -1):
-            potential_myst_dir = os.path.join(*parts[:i])
-            if not os.path.isabs(potential_myst_dir):
-                potential_myst_dir = os.path.abspath(potential_myst_dir)
+            potential_myst_dir = os.path.join(self.default_directory, *parts[:i])
+            potential_myst_dir = os.path.abspath(potential_myst_dir)
+            log.debug(f"_parse_path: Checking {potential_myst_dir}/myst.yml")
 
             # Check if this path contains a myst.yml
             if os.path.exists(os.path.join(potential_myst_dir, "myst.yml")):
@@ -55,13 +61,18 @@ class MystHTTPRequestHandler(SimpleHTTPRequestHandler):
                 file_path = "/" + "/".join(parts[i:])
                 if self.path.split("?")[0].endswith("/") and file_path != "/":
                     file_path += "/"
+                log.debug(
+                    f"_parse_path: Found myst.yml! myst_dir={myst_dir}, file_path={file_path}"
+                )
                 return myst_dir, file_path
 
         # No myst.yml found in any parent path, use the full path as myst_dir
-        myst_dir = os.path.join(*parts)
-        if not os.path.isabs(myst_dir):
-            myst_dir = os.path.abspath(myst_dir)
+        myst_dir = os.path.join(self.default_directory, *parts)
+        myst_dir = os.path.abspath(myst_dir)
 
+        log.debug(
+            f"_parse_path: No myst.yml found, using full path as myst_dir={myst_dir}"
+        )
         return myst_dir, "/"
 
     def _render_template(self, template_name, **kwargs):
@@ -226,6 +237,11 @@ class MystHTTPRequestHandler(SimpleHTTPRequestHandler):
 
 
 if __name__ == "__main__":
+    logging.basicConfig(
+        level=logging.DEBUG,
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    )
+
     port = int(sys.argv[1]) if len(sys.argv) > 1 else 8000
     default_dir = sys.argv[2] if len(sys.argv) > 2 else os.getcwd()
     jupyter_base_url = sys.argv[3] if len(sys.argv) > 3 else "/"

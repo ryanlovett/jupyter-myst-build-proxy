@@ -1,0 +1,7 @@
+version: 1
+project:
+  title: Test MyST Site
+  authors:
+    - name: Test Author
+site:
+  title: Test MyST Site
