@@ -9,7 +9,7 @@ from urllib.parse import unquote, urlparse, parse_qs
 
 log = logging.getLogger(__name__)
 
-# Track builds in progress: {myst_dir: {'status': 'building'|'success'|'failed', 'error': str}}
+# Track builds in progress: {myst_dir: {'status': 'building'|'success'|'failed', 'error': str, 'last_output': str}}
 build_status = {}
 build_lock = threading.Lock()
 
@@ -77,10 +77,25 @@ class MystHTTPRequestHandler(SimpleHTTPRequestHandler):
 
     def _render_template(self, template_name, **kwargs):
         """Render an HTML template"""
+        import html
+
         template_path = os.path.join(os.path.dirname(__file__), template_name)
         with open(template_path, "r") as f:
-            html = f.read()
-        return html.format(**kwargs).encode("utf-8")
+            template_html = f.read()
+
+        # Handle last_output formatting for building.html
+        if "last_output" in kwargs:
+            last_output = kwargs.pop("last_output")
+            if last_output:
+                # Escape HTML special characters
+                escaped_output = html.escape(last_output)
+                kwargs["last_output_html"] = (
+                    f'<div class="build-output">{escaped_output}</div>'
+                )
+            else:
+                kwargs["last_output_html"] = ""
+
+        return template_html.format(**kwargs).encode("utf-8")
 
     def _start_build(self, myst_dir, base_url):
         """Start building the MyST site in a background thread"""
@@ -94,20 +109,38 @@ class MystHTTPRequestHandler(SimpleHTTPRequestHandler):
                 )
                 env = os.environ.copy()
                 env["BASE_URL"] = base_url
-                result = subprocess.run(
+
+                # Use Popen to capture output line by line
+                process = subprocess.Popen(
                     ["myst", "build", "--html", "--ci"],
                     cwd=myst_dir,
                     env=env,
-                    capture_output=True,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.STDOUT,
                     text=True,
+                    bufsize=1,
                 )
 
+                output_lines = []
+                if process.stdout:
+                    for line in process.stdout:
+                        line = line.rstrip()
+                        if line:  # Only track non-empty lines
+                            output_lines.append(line)
+                            with build_lock:
+                                if myst_dir in build_status:
+                                    build_status[myst_dir]["last_output"] = line
+                            log.debug(f"Build output: {line}")
+
+                process.wait()
+
                 with build_lock:
-                    if result.returncode != 0:
-                        log.error(f"Build error: {result.stderr}")
+                    if process.returncode != 0:
+                        error_output = "\n".join(output_lines[-20:])  # Last 20 lines
+                        log.error(f"Build error: {error_output}")
                         build_status[myst_dir] = {
                             "status": "failed",
-                            "error": result.stderr,
+                            "error": error_output,
                         }
                     else:
                         log.info(f"Build completed for {myst_dir}")
@@ -176,12 +209,16 @@ class MystHTTPRequestHandler(SimpleHTTPRequestHandler):
 
         # Check build status
         with build_lock:
-            status = build_status.get(myst_dir, {}).get("status")
+            status_info = build_status.get(myst_dir, {})
+            status = status_info.get("status")
+            last_output = status_info.get("last_output", "")
 
         if status == "building":
             self.send_response(200)
             self.send_header("Content-Type", "text/html; charset=utf-8")
-            body = self._render_template("building.html", myst_dir=myst_dir)
+            body = self._render_template(
+                "building.html", myst_dir=myst_dir, last_output=last_output
+            )
             self.send_header("Content-Length", str(len(body)))
             self.end_headers()
             self.wfile.write(body)
@@ -201,12 +238,14 @@ class MystHTTPRequestHandler(SimpleHTTPRequestHandler):
         # Check if build is needed
         if self._needs_build(myst_dir):
             with build_lock:
-                build_status[myst_dir] = {"status": "building"}
+                build_status[myst_dir] = {"status": "building", "last_output": ""}
             self._start_build(myst_dir, base_url)
 
             self.send_response(200)
             self.send_header("Content-Type", "text/html; charset=utf-8")
-            body = self._render_template("building.html", myst_dir=myst_dir)
+            body = self._render_template(
+                "building.html", myst_dir=myst_dir, last_output=""
+            )
             self.send_header("Content-Length", str(len(body)))
             self.end_headers()
             self.wfile.write(body)

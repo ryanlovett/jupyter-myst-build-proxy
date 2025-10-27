@@ -63,6 +63,20 @@
             font-size: 13px;
             margin-top: 1.5rem;
         }}
+        .build-output {{
+            background: #f7f7f7;
+            padding: 0.75rem 1rem;
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+            font-size: 12px;
+            color: #24292e;
+            border: 1px solid #e1e4e8;
+            margin: 1.5rem 0;
+            text-align: left;
+            overflow-x: auto;
+            max-height: 100px;
+            overflow-y: auto;
+        }}
     </style>
 </head>
 <body>
@@ -71,6 +85,7 @@
         <div class="spinner"></div>
         <p>Your MyST site is being built...</p>
         <p><code>{myst_dir}</code></p>
+        {last_output_html}
         <p class="status">This page will automatically refresh when ready.</p>
     </div>
 </body>
