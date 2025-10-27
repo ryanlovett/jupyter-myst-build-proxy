@@ -26,12 +26,12 @@ pip install jupyter-myst-build-proxy
 
 With a jupyter application running, visit `/myst/<project-path>/` where `<project-path>` is a directory containing a MyST project (with `myst.yml`).
 
-Example 1:
+Example 1: Jupyter server on localhost
 ```
 http://localhost:8888/myst/my-documentation/
 ```
 
-Example 2:
+Example 2: Jupyter server on a JupyterHub
 ```
 https://jupyterhub.example.edu/user/username/myst/my-website/
 ```
@@ -71,7 +71,9 @@ jupyter-myst-build-proxy/
 ├── jupyter_myst_build_proxy/
 │   ├── __init__.py           # Main extension setup
 │   ├── static_server.py      # HTTP server for serving MyST sites
+│   ├── building.html         # Building status template
 │   └── no_myst_error.html    # Error page template
+├── tests/                    # pytest tests
 ├── setup.py                  # Package configuration
 └── README.md                 # This file
 ```
