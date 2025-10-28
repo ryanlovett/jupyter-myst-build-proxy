@@ -131,7 +131,11 @@ class MystHTTPRequestHandler(SimpleHTTPRequestHandler):
                             '<span class="myst-badge">MyST</span>' if has_myst else ""
                         )
                         # MyST projects open in new tab
-                        target_attr = ' target="_blank" rel="noopener noreferrer"' if has_myst else ''
+                        target_attr = (
+                            ' target="_blank" rel="noopener noreferrer"'
+                            if has_myst
+                            else ""
+                        )
                         directories.append(
                             f'<li class="directory-item">'
                             f'<a href="{html.escape(dir_url)}" class="directory-link"{target_attr}>'
