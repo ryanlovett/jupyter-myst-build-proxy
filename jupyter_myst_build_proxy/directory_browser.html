@@ -64,16 +64,22 @@
         .directory-item:last-child {{
             border-bottom: none;
         }}
-        .directory-link {{
+        .directory-row {{
             display: flex;
             align-items: center;
             padding: 12px;
-            text-decoration: none;
-            color: #212121;
             transition: background-color 0.1s ease;
         }}
-        .directory-link:hover {{
+        .directory-row:hover {{
             background-color: #f5f5f5;
+        }}
+        .directory-link {{
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            color: #212121;
+            flex: 1;
+            min-width: 0;
         }}
         .folder-icon {{
             margin-right: 12px;
@@ -85,9 +91,19 @@
             font-size: 13px;
             font-weight: 400;
             flex: 1;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }}
+        .directory-controls {{
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-left: 12px;
+            flex-shrink: 0;
         }}
         .myst-badge {{
-            margin-left: auto;
             background: #e8f5e9;
             color: #2e7d32;
             font-size: 10px;
@@ -96,6 +112,28 @@
             font-weight: 500;
             text-transform: uppercase;
             letter-spacing: 0.3px;
+        }}
+        .rebuild-button {{
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            text-decoration: none;
+            font-size: 14px;
+            color: #616161;
+            border-radius: 3px;
+            transition: all 0.15s ease;
+            opacity: 0;
+            visibility: hidden;
+        }}
+        .directory-row:hover .rebuild-button {{
+            opacity: 1;
+            visibility: visible;
+        }}
+        .rebuild-button:hover {{
+            background-color: #e3f2fd;
+            color: #1976d2;
         }}
         .empty-state {{
             text-align: center;

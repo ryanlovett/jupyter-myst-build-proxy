@@ -130,19 +130,34 @@ class MystHTTPRequestHandler(SimpleHTTPRequestHandler):
                         myst_badge = (
                             '<span class="myst-badge">MyST</span>' if has_myst else ""
                         )
+                        # Rebuild button (only for MyST projects)
+                        rebuild_button = ""
+                        if has_myst:
+                            rebuild_url = f"{html.escape(dir_url)}?rebuild=1"
+                            rebuild_button = (
+                                f'<a href="{rebuild_url}" class="rebuild-button" '
+                                'title="Rebuild site" target="_blank" rel="noopener noreferrer">🔄</a>'
+                            )
+
                         # MyST projects open in new tab
                         target_attr = (
                             ' target="_blank" rel="noopener noreferrer"'
                             if has_myst
                             else ""
                         )
+
                         directories.append(
                             f'<li class="directory-item">'
+                            f'<div class="directory-row">'
                             f'<a href="{html.escape(dir_url)}" class="directory-link"{target_attr}>'
                             f'<span class="folder-icon">📁</span>'
                             f'<span class="directory-name">{html.escape(entry)}</span>'
-                            f"{myst_badge}"
                             f"</a>"
+                            f'<div class="directory-controls">'
+                            f"{myst_badge}"
+                            f"{rebuild_button}"
+                            f"</div>"
+                            f"</div>"
                             f"</li>"
                         )
         except PermissionError:
