@@ -4,6 +4,7 @@ import sys
 import subprocess
 import threading
 import logging
+import time
 from http.server import SimpleHTTPRequestHandler, HTTPServer
 from urllib.parse import unquote, urlparse, parse_qs
 
@@ -22,6 +23,12 @@ class MystHTTPRequestHandler(SimpleHTTPRequestHandler):
         super().__init__(
             *args, directory=MystHTTPRequestHandler.default_directory, **kwargs
         )
+
+    def _set_nocache_headers(self):
+        """Set headers to prevent caching of dynamic content"""
+        self.send_header("Cache-Control", "no-cache, no-store, must-revalidate")
+        self.send_header("Pragma", "no-cache")
+        self.send_header("Expires", "0")
 
     def _parse_path(self):
         """
@@ -293,9 +300,11 @@ class MystHTTPRequestHandler(SimpleHTTPRequestHandler):
                     if myst_dir in build_status:
                         del build_status[myst_dir]
 
+                # Redirect with timestamp parameter to force cache bust
                 self.send_response(302)
-                redirect_url = base_url + file_path
+                redirect_url = f"{base_url}{file_path}?_t={int(time.time() * 1000)}"
                 self.send_header("Location", redirect_url)
+                self._set_nocache_headers()
                 self.end_headers()
                 return
 
@@ -319,6 +328,7 @@ class MystHTTPRequestHandler(SimpleHTTPRequestHandler):
         if status == "building":
             self.send_response(200)
             self.send_header("Content-Type", "text/html; charset=utf-8")
+            self._set_nocache_headers()
             body = self._render_template(
                 "building.html", myst_dir=myst_dir, last_output=last_output
             )
@@ -346,6 +356,7 @@ class MystHTTPRequestHandler(SimpleHTTPRequestHandler):
 
             self.send_response(200)
             self.send_header("Content-Type", "text/html; charset=utf-8")
+            self._set_nocache_headers()
             body = self._render_template(
                 "building.html", myst_dir=myst_dir, last_output=""
             )
