@@ -272,7 +272,8 @@ class MystHTTPRequestHandler(SimpleHTTPRequestHandler):
         return not os.path.exists(os.path.join(html_dir, "index.html"))
 
     def _postbuild(self, myst_dir):
-        if not os.environ["JUPYTER_MYST_BUILD_PROXY_POSTBUILD"]:
+
+        if not os.getenv("JUPYTER_MYST_BUILD_PROXY_POSTBUILD"):
             log.debug(
                 "JUPYTER_MYST_BUILD_PROXY_POSTBUILD not set."
                 f" Skipping post-build HTML injection for {myst_dir}"
