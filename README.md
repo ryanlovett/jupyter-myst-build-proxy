@@ -50,6 +50,12 @@ http://localhost:8888/myst-build/my-documentation/?rebuild=1
 
 This will delete the `_build/html` directory and regenerate the site.
 
+#### Rebuild button
+
+To have `jupyter-myst-build-proxy` run a post-build script which injects a "Rebuild" button into your site, set the `JUPYTER_MYST_BUILD_PROXY_POSTBUILD` environment variable to any value.
+
+With this functionality enabled, users click this button instead of editing the URL to trigger a rebuild.
+
 ## How It Works
 
 1. When you access `/myst-build/<project-path>/`, the extension:
