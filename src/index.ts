@@ -49,13 +49,8 @@ const plugin: JupyterFrontEndPlugin<void> = {
 
         // Construct URL from JupyterLab base URL and parent directory of MyST project file
         const baseUrl = PageConfig.getBaseUrl();
-        let mystBuildUrl: string;
-        // TODO: Ternary
-        if (parentDir === '') {
-          mystBuildUrl = `${baseUrl}myst-build/`;
-        } else {
-          mystBuildUrl = `${baseUrl}myst-build/${parentDir}/`;
-        }
+        const mystBaseUrl = parentDir ? `${baseUrl}myst-build/${parentDir}` : `${baseUrl}myst-build` 
+        const mystBuildUrl = `${mystBaseUrl}/?rebuild=1`
 
         const newWindow = window.open(mystBuildUrl, '_blank');
 
