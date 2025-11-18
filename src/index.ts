@@ -6,6 +6,7 @@ import { FileBrowser, IFileBrowserFactory } from '@jupyterlab/filebrowser';
 import { Notification } from '@jupyterlab/apputils';
 import { PageConfig } from '@jupyterlab/coreutils';
 import { Contents } from '@jupyterlab/services';
+import { buildIcon } from '@jupyterlab/ui-components';
 
 const COMMAND_ID = 'jupyter-myst-build-proxy:build-myst';
 
@@ -34,6 +35,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
     commands.addCommand(COMMAND_ID, {
       label: 'Build MyST project',
       caption: 'Build and view the MyST site',
+      icon: buildIcon,
       isVisible: () => {
         return !!getMystConfigFileIfSelected(factory.tracker.currentWidget);
       },
