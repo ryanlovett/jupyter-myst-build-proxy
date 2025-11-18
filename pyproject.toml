@@ -25,14 +25,47 @@ Issues = "https://github.com/ryanlovett/jupyter-myst-build-proxy/issues"
 myst-build = "jupyter_myst_build_proxy:setup_myst"
 
 [build-system]
-requires = ["setuptools>=45", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling>=1.5.0", "jupyterlab>=4.0.0,<5", "hatch-nodejs-version>=0.3.2"]
+build-backend = "hatchling.build"
 
-[tool.setuptools.packages.find]
-include = ["jupyter_myst_build_proxy*"]
+[tool.hatch.metadata.hooks.nodejs]
+fields = ["description", "authors", "urls", "keywords"]
 
-[tool.setuptools.package-data]
-jupyter_myst_build_proxy = ["static_server.py", "building.html", "directory_browser.html", "logo-square.svg"]
+[tool.hatch.build.targets.sdist]
+artifacts = ["jupyter_myst_build_proxy/labextension"]
+exclude = [".github", "binder"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["jupyter_myst_build_proxy"]
+include = [
+    "jupyter_myst_build_proxy/*.py",
+    "jupyter_myst_build_proxy/*.html",
+    "jupyter_myst_build_proxy/*.svg"
+]
+
+[tool.hatch.build.targets.wheel.shared-data]
+"jupyter_myst_build_proxy/labextension" = "share/jupyter/labextensions/jupyter-myst-build-proxy"
+"install.json" = "share/jupyter/labextensions/jupyter-myst-build-proxy/install.json"
+
+[tool.hatch.build.hooks.jupyter-builder]
+dependencies = ["hatch-jupyter-builder>=0.5"]
+build-function = "hatch_jupyter_builder.npm_builder"
+ensured-targets = [
+    "jupyter_myst_build_proxy/labextension/static/style.js",
+    "jupyter_myst_build_proxy/labextension/package.json",
+]
+skip-if-exists = ["jupyter_myst_build_proxy/labextension/static/style.js"]
+
+[tool.hatch.build.hooks.jupyter-builder.build-kwargs]
+build_cmd = "build:prod"
+npm = ["jlpm"]
+
+[tool.hatch.build.hooks.jupyter-builder.editable-build-kwargs]
+build_cmd = "install:extension"
+npm = ["jlpm"]
+source_dir = "src"
+build_dir = "jupyter_myst_build_proxy/labextension"
+
 
 # tbump is used to simplify and standardize the release process when updating
 # the version, making a git commit and tag, and pushing changes.
@@ -62,3 +95,7 @@ tag_template = "v{new_version}"
 [[tool.tbump.file]]
 src = "pyproject.toml"
 search = 'version = "{current_version}"'
+
+[[tool.tbump.file]]
+src = "package.json"
+search = '"version": "{current_version}"'

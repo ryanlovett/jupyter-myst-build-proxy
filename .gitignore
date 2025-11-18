@@ -40,3 +40,10 @@ venv.bak/
 
 # mkdocs documentation
 /site
+
+# Frontend extension stuff
+*.tsbuildinfo
+lib/
+node_modules/
+.yarn/
+jupyter_myst_build_proxy/labextension
