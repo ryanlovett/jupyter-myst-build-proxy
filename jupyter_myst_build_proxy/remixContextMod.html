@@ -1,0 +1,10 @@
+<script>
+  rebuildAction = {
+    title: "Rebuild",
+    url: `${window.location.pathname}?rebuild=1`,
+    internal: true,
+    static: true,
+  };
+  window.__remixContext["state"]["loaderData"]["root"]["config"]["actions"].push(rebuildAction);
+  window.__remixContext["state"]["loaderData"]["routes/$"]["config"]["actions"].push(rebuildAction);
+</script>

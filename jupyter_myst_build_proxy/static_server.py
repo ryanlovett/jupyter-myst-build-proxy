@@ -4,7 +4,9 @@ import sys
 import subprocess
 import threading
 import logging
+import re
 import time
+from glob import glob
 from http.server import SimpleHTTPRequestHandler, HTTPServer
 from urllib.parse import unquote, urlparse, parse_qs
 
@@ -253,7 +255,9 @@ class MystHTTPRequestHandler(SimpleHTTPRequestHandler):
                         }
                     else:
                         log.info(f"Build completed for {myst_dir}")
+                        self._postbuild(myst_dir)
                         build_status[myst_dir] = {"status": "success"}
+
             except Exception as e:
                 log.error(f"Build exception: {e}")
                 with build_lock:
@@ -266,6 +270,56 @@ class MystHTTPRequestHandler(SimpleHTTPRequestHandler):
         """Check if the MyST site needs to be built"""
         html_dir = os.path.join(myst_dir, "_build", "html")
         return not os.path.exists(os.path.join(html_dir, "index.html"))
+
+    def _postbuild(self, myst_dir):
+
+        if not os.getenv("JUPYTER_MYST_BUILD_PROXY_POSTBUILD"):
+            log.debug(
+                "JUPYTER_MYST_BUILD_PROXY_POSTBUILD not set."
+                f" Skipping post-build HTML injection for {myst_dir}"
+            )
+            return
+
+        html_dir = os.path.join(myst_dir, "_build", "html")
+        injectable_html_file = os.path.join(
+            os.path.dirname(__file__),
+            "remixContextMod.html",
+        )
+
+        with open(injectable_html_file, "r", encoding="utf-8") as f:
+            injectable_html = f.read().strip()
+
+        try:
+            log.debug(f"Injecting HTML in {html_dir}")
+            html_files = glob(
+                os.path.join(html_dir, "**", "*.html"),
+                recursive=True,
+            )
+
+            for html_file in html_files:
+                log.debug(f"Modifying {html_file}")
+                with open(html_file, "r", encoding="utf-8") as f:
+                    html = f.read()
+
+                # Should never happen, but let's handle anyway
+                if '</body>' not in html:
+                    msg = f"No <body> tag found in {html_file}"
+                    log.error(f"Error: {msg}")
+                    raise RuntimeError(msg)
+
+                modified_html = html.replace(
+                    "</body>",
+                    f"{injectable_html}\n</body>"
+                )
+
+                with open(html_file, "w", encoding="utf-8") as f:
+                    f.write(modified_html)
+
+        except Exception as e:
+            log.error(f"Error injecting HTML into {html_file}: {e}")
+            return
+
+        log.info(f"Post-build HTML injection completed for {myst_dir}")
 
     def do_GET(self):
         myst_dir, file_path = self._parse_path()
