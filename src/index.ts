@@ -45,9 +45,12 @@ const plugin: JupyterFrontEndPlugin<void> = {
           return;
         }
 
+        // Remove "RTC:" prefix (from jupyter-collaboration 3.x)
+        const filePath = file.path.replace(/^RTC:/, '');
+
         // Extract parent directory from file path
         // e.g., "/foo/bar/myst.yml" -> "/foo/bar"
-        const parentDir = file.path.substring(0, file.path.lastIndexOf('/'));
+        const parentDir = filePath.substring(0, filePath.lastIndexOf('/'));
 
         // Construct URL from JupyterLab base URL and parent directory of MyST project file
         const baseUrl = PageConfig.getBaseUrl();
