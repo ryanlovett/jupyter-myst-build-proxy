@@ -59,7 +59,7 @@ class MystHTTPRequestHandler(SimpleHTTPRequestHandler):
 
         # Try to find myst.yml by traversing path segments from longest to shortest
         # This allows for deeper paths like /proj/project1/website
-        for i in range(len(parts), 0, -1):
+        for i in range(len(parts), -1, -1):
             potential_myst_dir = os.path.join(self.default_directory, *parts[:i])
             potential_myst_dir = os.path.abspath(potential_myst_dir)
             log.debug(f"_parse_path: Checking {potential_myst_dir}/myst.yml")
